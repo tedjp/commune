@@ -1,21 +1,20 @@
 # Commune
 
-Commune is a protocol for peer-to-peer chat on a network.
+Commune is a protocol for peer-to-peer chat.
 
-Inspired by the classic Numb3rs clip where IRC is described as like ships
-passing in the night, Commune is intended for unmoderated communication between
-interested parties.
+Inspired by IRC, it's
+intended for unmoderated communication between interested parties.
 
-Compared to IRC it's totally decentralized, not just federated. There are no
-servers and no rendezvous points. There are no reserved nicknames. Peers may be
-identified just by their IP address if desired.
+Compared to IRC it's totally decentralized. There are no servers and no
+rendezvous points. There are no reserved nicknames. Peers may be identified just
+by their IP address if desired.
 
 Compared with link-local XMPP, it's intended to be much simpler. A smaller set
 of message types, no need for XML parsing, and instead of Multicast DNS for peer
 discovery, peers simply join the channel of their choice.
 
-Downsides are that this works best with link-local multicast, not for global
-messaging where unicast, proxying/bridging & rendezvous points may be required.
+A downside is that it works best with link-local multicast, not via
+the entire public internet.
 
 
 ## Protocol
@@ -40,10 +39,8 @@ All multi-byte numeric fields are big-endian. All strings are UTF-8.
 The rest of the packet is the message body.
 </pre>
 
-Messages must, of course, fit within a single UDP packet on the link.
-
-Unicast messages are sent to port 1818. Both multicast & unicast messages SHOULD
-be sent from port 1818.
+Messages must, of course, fit within a single UDP packet on the link. In general
+that means a maximum message size of 1452 octets.
 
 Message type is conventionally a 4-character ASCII string.
 
@@ -146,8 +143,11 @@ address so there isn't a single pixel difference).
 A minimalist user agent need only implement the MESG message. This could be
 useful to communicate automated notifications.
 
-Private messages: Local port 1818. Same as above except that everything that
-would normally be multicast is sent unicast.
+Private messages: Local port 1818 (for single-user devices). Same as above
+except that everything that would normally be multicast is sent unicast.
+(Exception: a user agent may bind a different port to facilitate
+multi-user-per-address functionality, but indication of the port number to peers
+is not specified.)
 
 There are no message acknowledgements, and as a UDP protocol there's no built-in
 indication that a message was received by anyone. However there are some signs
@@ -170,7 +170,7 @@ Multiple users per device: Could assign an IP address per user or have a single
 "daemon" farm out messages to each user, but message origination in any channels
 that had both users would be unclear (probably just have to use the default
 identifier). Or: act as a broker: preface each message with the user's
-nick/persona. Multi-user-per-IP adds significant complexity.
+nick/persona. Or: just have each client bind a unique local port number.
 
 Broker/relay: Relays messages between subnets. Messages may be prefixed with the
 src nickname. If broker becomes popular, better to extend protocol with a
@@ -182,7 +182,7 @@ querying a peer for the message history could provide useful context when
 joining a channel.
 
 
-## Out-of-scope
+## Rate limiting
 
 Spam/ignore/rate-limiting: may be implemented by clients. May use either the IP
 address or - for link-local - the MAC addresss to ignore a peer. Ignores can be
@@ -193,17 +193,17 @@ other peers.
 Excessive messages from a peer are handled either directly by clients or in the
 normal network administrative sense. Undesirable behavior may be handled, for
 example, with a literal slap on the wrist. Peers my also elect to move to a
-different channel to avoid dealing with undesirables. This is, of course, not an
-automated procedure and may be negotiated either in-band or, more likely,
-out-of-band.
+different channel to avoid dealing with undesirables. Transition to a new
+channel is not built into the protocol.
 
 
 ## Implementation details
 
 ### The Commune
 
-The default channel is port 1818, colloquially known as "the commune". In lieu
-of any other user preference/history, an implementation should join port 1818.
+The default channel is port 1818, colloquially known as "the commune" or maybe
+just "public". In lieu of any other user preference/history, an implementation
+should join port 1818.
 
 ### Rate limiting
 
