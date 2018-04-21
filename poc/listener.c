@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define MULTICAST_ADDR "ff02::114"
+#define MULTICAST_ADDR "ff02::262d"
 #define MULTICAST_PORT 1818
 //#define MULTICAST_PORT 12
 //#define INTERFACE_INDEX 3
@@ -22,6 +22,19 @@ __attribute__((noreturn))
 static void pdie(const char *msg) {
     perror(msg);
     exit(1);
+}
+
+static void toNetID(char *peer) {
+    char *end = strchr(peer, '%');
+    if (end == NULL) {
+        end = peer + strlen(peer);
+    }
+
+    if (end < peer + 4)
+        return;
+
+    memmove(peer, end - 4, 4);
+    peer[4] = '\0';
 }
 
 static void join_mcast(int sock) {
@@ -81,7 +94,6 @@ static void handle_message(const char buf[], ssize_t len, const char *sender) {
     static const char MESG[] = {'M', 'E', 'S', 'G'};
 
     if (memcmp(buf + 1, MESG, sizeof(MESG)) == 0) {
-        // Probably run this through a UTF-8 sanitizer or something.
         printf("%s: %.*s\n", sender, (int)(len - 5), buf + 5);
     } else {
         printf("%s sent unrecognized message type %4s\n", sender, buf + 1);
@@ -146,6 +158,7 @@ int main(void) {
                 memcpy(sender, unknown, sizeof(unknown));
             }
 
+            toNetID(sender);
             handle_message(buf, len, sender);
         } else {
             struct msghdr msg;

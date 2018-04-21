@@ -22,9 +22,9 @@ the entire public internet.
 All communication is done using a single IPv6 link-local address. IPv4 support
 might be added later.
 
-The link-local address is currently ff02::114, which is an address intended for
-"any private experiment". If the protocol proves to be useful, a new address
-will be requested from IANA.
+The link-local address is currently ff02::262d, which is just squatted and not
+registered with IANA. If the protocol proves to be useful, a new address
+may be requested from IANA.
 
 Ports 0-1023 are generally unused to avoid requiring access to privileged ports.
 
