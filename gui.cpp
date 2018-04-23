@@ -3,6 +3,7 @@
 #include <giomm/socket.h>
 #include <giomm/socketsource.h>
 #include <glibmm/main.h>
+#include <glibmm/convert.h>
 #include <gtkmm/application.h>
 #include <gtkmm/applicationwindow.h>
 #include <gtkmm/box.h>
@@ -28,6 +29,7 @@ protected:
     void on_startup() override;
     void receiveMessage(const std::string& sender, const std::string& msg) override;
     bool handleSocketEvent(Glib::IOCondition io_condition);
+    void processInput();
 
 private:
     Gtk::ApplicationWindow window_;
@@ -45,6 +47,7 @@ CommuneGui::CommuneGui(int argc, char *argv[]):
     commune::Commune::Commune(),
     textbufferp_(Gtk::TextBuffer::create())
 {
+    window_.set_title("Commune");
     window_.set_default_size(640, 480);
 
     hpane_.set_position(500);
@@ -57,6 +60,9 @@ CommuneGui::CommuneGui(int argc, char *argv[]):
     vbox_.pack_end(entry_, false, false);
 
     window_.add(vbox_);
+
+    entry_.grab_focus();
+    entry_.signal_activate().connect(sigc::slot<void>(sigc::mem_fun(this, &CommuneGui::processInput)));
 
     window_.show_all();
 }
@@ -72,15 +78,27 @@ void CommuneGui::on_startup() {
 }
 
 bool CommuneGui::handleSocketEvent(Glib::IOCondition io_condition) {
-    std::cerr << "got a socket event" << std::endl;
     commune::Commune::onEvent();
     return true;
 }
 
 void CommuneGui::receiveMessage(const std::string& sender, const std::string& msg) {
-    std::cerr << "received a message" << std::endl;
     std::string display_message = sender + ": " + msg + '\n';
     textbufferp_->insert(textbufferp_->end(), display_message);
+}
+
+void CommuneGui::processInput() {
+    std::string msg = Glib::locale_to_utf8(entry_.get_text());
+
+    if (msg.compare(0, 6, "/nick ") == 0) {
+        // Maybe truncate at first non-printable (eg. \n)
+        // Better do that for incoming nicknames.
+        setNick(msg.substr(6));
+    } else {
+        Commune::sendMessage(msg);
+    }
+
+    entry_.set_text(Glib::ustring());
 }
 
 } // anonymous namespace
