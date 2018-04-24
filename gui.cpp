@@ -100,6 +100,9 @@ void CommuneGui::receiveMessage(const std::string& sender, const std::string& ms
 }
 
 void CommuneGui::processInput() {
+    if (entry_.get_text_length() == 0)
+        return;
+
     std::string msg = Glib::locale_to_utf8(entry_.get_text());
 
     if (msg.compare(0, 6, "/nick ") == 0) {
