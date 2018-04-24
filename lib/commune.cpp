@@ -186,7 +186,8 @@ std::string Commune::sender(const struct sockaddr_in6 *sin6) const {
 
     string name = room_.nick(string(addrstr));
 
-    displayName += name;
+    if (!name.empty())
+        displayName += " " + name;
 
     return displayName;
 }

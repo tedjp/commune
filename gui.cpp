@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <giomm/notification.h>
 #include <giomm/socket.h>
 #include <giomm/socketsource.h>
 #include <glibmm/main.h>
@@ -97,6 +98,10 @@ void CommuneGui::receiveMessage(const std::string& sender, const std::string& ms
     auto pos = textbufferp_->insert(textbufferp_->end(), display_message);
     textbufferp_->move_mark(end_mark_, textbufferp_->end());
     textview_.scroll_to(end_mark_);
+
+    auto notification_ref = Gio::Notification::create("Commune message");
+    notification_ref->set_body(display_message);
+    send_notification("new-message", notification_ref);
 }
 
 void CommuneGui::processInput() {
