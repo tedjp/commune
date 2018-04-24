@@ -39,6 +39,9 @@ protected:
     receiveMessage(__attribute__((unused)) const std::string& sender, __attribute__((unused)) const std::string& msg)
     {}
 
+    virtual void
+    onNickNotification(std::string&& addrstr, std::string&& nick);
+
     void send_net_msg(const std::string& type, const std::string& data = std::string());
 
 private:

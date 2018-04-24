@@ -143,6 +143,23 @@ void Commune::onEvent() {
     std::string msgtype(buf + 1, 4);
     std::string msgbody(buf + 5, len - 5);
 
+    if (msgtype == "NICK") {
+        // Tidy this up plz.
+        char addrstr[INET6_ADDRSTRLEN];
+        if (0 == getnameinfo(
+                    reinterpret_cast<const struct sockaddr*>(&sin6),
+                    sizeof(sin6),
+                    addrstr, sizeof(addrstr),
+                    nullptr, 0,
+                    NI_NUMERICHOST | NI_NUMERICSERV | NI_DGRAM))
+        {
+            onNickNotification(string(addrstr), std::move(msgbody));
+            return;
+        } else {
+            throw std::runtime_error("Can't figure out what sender's IP address is");
+        }
+    }
+
     dispatch(sender(&sin6), std::move(msgtype), std::move(msgbody));
 }
 
@@ -216,6 +233,11 @@ void Commune::setNick(const string& nick) {
 // XXX: API: remove/change group/room param
 void Commune::sendMessage(const std::string& msg, uint16_t group) {
     send_net_msg("MESG", msg);
+}
+
+void
+Commune::onNickNotification(std::string&& addrstr, std::string&& nick) {
+    room_.setNick(std::move(addrstr), std::move(nick));
 }
 
 } // namespace commune
