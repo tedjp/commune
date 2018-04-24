@@ -10,6 +10,7 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/hvpaned.h>
 #include <gtkmm/listbox.h>
+#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textview.h>
 #include <sigc++/functors/mem_fun.h>
 
@@ -38,7 +39,10 @@ private:
     Gtk::VBox vbox_;
     Gtk::HPaned hpane_;
     Gtk::ListBox userlist_;
+    Gtk::ScrolledWindow userlist_scroller_;
     Gtk::Entry entry_;
+    Gtk::ScrolledWindow textview_scroller_;
+    Glib::RefPtr<Gtk::TextBuffer::Mark> end_mark_;
     Gtk::TextView textview_;
 };
 
@@ -54,7 +58,13 @@ CommuneGui::CommuneGui(int argc, char *argv[]):
 
     textview_.set_buffer(textbufferp_);
     textview_.set_editable(false);
-    hpane_.pack1(textview_, true, true);
+    textview_.set_cursor_visible(false);
+    textview_scroller_.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+    // TODO: on resize, scroll to end.
+    //textview_scroller_.signal_configure_event().connect(/*...*/);
+    textview_scroller_.add(textview_);
+    end_mark_ = textbufferp_->create_mark("end", textbufferp_->end());
+    hpane_.pack1(textview_scroller_, true, true);
     hpane_.pack2(userlist_, true, true);
     vbox_.pack_start(hpane_, true, true);
     vbox_.pack_end(entry_, false, false);
@@ -84,7 +94,9 @@ bool CommuneGui::handleSocketEvent(Glib::IOCondition io_condition) {
 
 void CommuneGui::receiveMessage(const std::string& sender, const std::string& msg) {
     std::string display_message = sender + ": " + msg + '\n';
-    textbufferp_->insert(textbufferp_->end(), display_message);
+    auto pos = textbufferp_->insert(textbufferp_->end(), display_message);
+    textbufferp_->move_mark(end_mark_, textbufferp_->end());
+    textview_.scroll_to(end_mark_);
 }
 
 void CommuneGui::processInput() {
