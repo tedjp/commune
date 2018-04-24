@@ -182,12 +182,13 @@ std::string Commune::sender(const struct sockaddr_in6 *sin6) const {
         return "(unknown)";
     }
 
+    string displayName = string("[" + netID(sin6) + "]");
+
     string name = room_.nick(string(addrstr));
 
-    if (!name.empty())
-        return name;
+    displayName += name;
 
-    return netID(sin6);
+    return displayName;
 }
 
 void Commune::send_net_msg(const std::string& type, const std::string& body) {
