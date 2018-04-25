@@ -74,7 +74,8 @@ Commune::Commune():
     if (bind(sock_, (const struct sockaddr*)&addr_, sizeof(addr_)) != 0)
         throw std::runtime_error(string("Failed to bind: ") + strerror(errno));
 
-    struct if_nameindex *nameindex = if_nameindex();
+    std::unique_ptr<struct if_nameindex[], decltype(&if_freenameindex)>
+        nameindex(if_nameindex(), &if_freenameindex);
 
     if (!nameindex)
         throw runtime_error("Failed to retrieve interfaces");
@@ -104,7 +105,7 @@ Commune::Commune():
         }
     }
 
-    if_freenameindex(nameindex);
+    nameindex.reset();
 
     if (joined == 0)
         throw std::runtime_error("Unable to join on any interfaces");
