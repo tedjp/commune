@@ -243,4 +243,12 @@ Commune::onNickNotification(std::string&& addrstr, std::string&& nick) {
     room_.setNick(std::move(addrstr), std::move(nick));
 }
 
+Commune::~Commune() {
+    send_net_msg("GBYE");
+    struct ipv6_mreq mreq;
+    memset(&mreq, 0, sizeof(mreq));
+    mreq.ipv6mr_multiaddr = addr_.sin6_addr;
+    setsockopt(sock_, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, &mreq, sizeof(mreq));
+}
+
 } // namespace commune
