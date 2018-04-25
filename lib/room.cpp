@@ -26,3 +26,7 @@ void Room::setNick(std::string&& addr, std::string&& nick) {
         nicks_.emplace(std::move(addr), std::move(nick));
 #endif
 }
+
+void Room::removeNickByAddress(const std::string& addrstr) {
+    nicks_.erase(addrstr);
+}

@@ -144,7 +144,7 @@ void Commune::onEvent() {
     std::string msgtype(buf + 1, 4);
     std::string msgbody(buf + 5, len - 5);
 
-    if (msgtype == "NICK") {
+    if (msgtype == "NICK" || msgtype == "GBYE") {
         // Tidy this up plz.
         char addrstr[INET6_ADDRSTRLEN];
         if (0 == getnameinfo(
@@ -154,7 +154,11 @@ void Commune::onEvent() {
                     nullptr, 0,
                     NI_NUMERICHOST | NI_NUMERICSERV | NI_DGRAM))
         {
-            onNickNotification(string(addrstr), std::move(msgbody));
+            if (msgtype == "NICK")
+                onNickNotification(string(addrstr), std::move(msgbody));
+            else if (msgtype == "GBYE")
+                room_.removeNickByAddress(addrstr);
+
             return;
         } else {
             throw std::runtime_error("Can't figure out what sender's IP address is");

@@ -30,6 +30,8 @@ public:
     uint16_t port() const { return port_; }
     const std::string& name() const { return name_; }
     void name(std::string&& newName) { name_.assign(std::move(newName)); }
+
+    void removeNickByAddress(const std::string& address);
 };
 
 } // namespace commune
