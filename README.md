@@ -17,6 +17,27 @@ A downside is that it works best with link-local multicast, not via
 the entire public internet.
 
 
+## Build
+
+### Dependencies
+
+Debian/Ubuntu/…:
+
+    sudo apt-get install libgtkmm-3.0-dev
+
+Mac OS X:
+
+    brew install gtkmm3
+
+### Build
+
+    make commune-gui
+
+### Run
+
+    ./commune-gui
+
+
 ## Protocol
 
 All communication is done using a single IPv6 link-local address. IPv4 support
