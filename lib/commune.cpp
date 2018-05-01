@@ -66,7 +66,9 @@ Commune::Commune():
 
     // Neither RECVERR nor REUSEADDR is strictly necessary, so ignore
     // the return value.
+#ifdef IPV6_RECVERR
     setsockopt(sock_, IPPROTO_IPV6, IPV6_RECVERR, &yes, sizeof(yes));
+#endif
     setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
     memset(&addr_, 0, sizeof(addr_));
