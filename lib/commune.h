@@ -19,7 +19,7 @@ public:
 
     Commune& operator=(const Commune&) = delete;
 
-    ~Commune() noexcept;
+    ~Commune();
 
     // Set nickname for all channels
     void setNick(const std::string& nick);

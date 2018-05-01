@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <cstring>
+#include <fcntl.h>
 #include <functional>
 #include <memory>
 #include <net/if.h>
@@ -52,10 +53,14 @@ using ::std::string;
 Commune::Commune():
     room_(DEFAULT_GROUP)
 {
-    sock_ = commune::SafeFD(::socket(AF_INET6, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
-
+    sock_ = commune::SafeFD(::socket(AF_INET6, SOCK_DGRAM, 0));
     if (sock_ == -1)
         throw runtime_error(string("socket() failed: ") + strerror(errno));
+
+    // Apple doesn't do SOCK_NONBLOCK, SOCK_CLOEXEC
+    // XXX: Old OSes don't have O_CLOEXEC
+    if (fcntl(sock_, F_SETFD, O_CLOEXEC | O_NONBLOCK) != 0)
+        throw runtime_error(string("Failed to set socket options: ") + strerror(errno));
 
     const int yes = 1;
 
@@ -95,7 +100,7 @@ Commune::Commune():
         // but just try to join on all.
         mreq.ipv6mr_interface = nameindex[i].if_index;
 
-        if (setsockopt(sock_, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq,
+        if (setsockopt(sock_, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq,
                 sizeof(mreq)) == 0) {
             ++joined;
         } else {
@@ -252,7 +257,7 @@ Commune::~Commune() {
     struct ipv6_mreq mreq;
     memset(&mreq, 0, sizeof(mreq));
     mreq.ipv6mr_multiaddr = addr_.sin6_addr;
-    setsockopt(sock_, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, &mreq, sizeof(mreq));
+    setsockopt(sock_, IPPROTO_IPV6, IPV6_LEAVE_GROUP, &mreq, sizeof(mreq));
 }
 
 } // namespace commune

@@ -51,7 +51,7 @@ public:
         std::swap(fd_, other.fd_);
     }
 
-    operator bool() const {
+    explicit operator bool() const {
         return fd_ != -1;
     }
 
