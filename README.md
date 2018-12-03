@@ -199,10 +199,10 @@ channel is not built into the protocol.
 
 ## Implementation details
 
-### The Commune
+### Default channel
 
-The default channel is port 1818, colloquially known as "the commune" or maybe
-just "public". In lieu of any other user preference/history, an implementation
+The default channel is port 1818.
+In lieu of any other user preference/history, an implementation
 should join port 1818.
 
 ### Rate limiting
