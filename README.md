@@ -17,6 +17,25 @@ A downside is that it works best with link-local multicast, not via
 the entire public internet.
 
 
+## Build
+
+### Dependencies
+
+    apt install libgtkmm-3.0-dev
+
+### Compile
+
+    make
+
+### Run
+
+    ./commune-gui
+
+### Build Documentation (optional)
+
+    apt install markdown
+    make docs
+
 ## Protocol
 
 All communication is done using a single IPv6 link-local address. IPv4 support
